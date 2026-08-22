@@ -20,12 +20,12 @@ Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
-    app.include_router(auth_router, prefix="/api/v1")
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
+app.include_router(auth_router, prefix="/api/v1")
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
