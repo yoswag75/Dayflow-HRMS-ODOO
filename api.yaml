@@ -1,1 +1,163 @@
+openapi: 3.0.3
+info:
+  title: Dayflow HRMS API
+  description: REST API surface for the Dayflow HRMS Odoo module
+  version: 1.0.0
 
+servers:
+  - url: http://localhost:8069/api/v1
+
+paths:
+  /employees:
+    get:
+      summary: List employees
+      parameters:
+        - in: query
+          name: department_id
+          schema: { type: integer }
+        - in: query
+          name: active
+          schema: { type: boolean, default: true }
+      responses:
+        "200":
+          description: Employee list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Employee" }
+    post:
+      summary: Create employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmployeeCreate" }
+      responses:
+        "201":
+          description: Created employee
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Employee" }
+
+  /employees/{id}:
+    get:
+      summary: Get employee by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Employee" }
+          description: Employee record
+
+  /attendance/checkin:
+    post:
+      summary: Record clock-in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employee_id: { type: integer }
+                timestamp: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Attendance record created
+
+  /attendance/checkout:
+    post:
+      summary: Record clock-out
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employee_id: { type: integer }
+                timestamp: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Attendance record updated
+
+  /leaves:
+    get:
+      summary: List leave requests
+      parameters:
+        - in: query
+          name: employee_id
+          schema: { type: integer }
+        - in: query
+          name: state
+          schema:
+            type: string
+            enum: [draft, confirm, validate1, validate, refuse]
+      responses:
+        "200":
+          description: Leave request list
+    post:
+      summary: Submit leave request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LeaveRequest" }
+      responses:
+        "201":
+          description: Leave request submitted
+
+  /payslips/run:
+    post:
+      summary: Generate payslips for a period
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date_from: { type: string, format: date }
+                date_to: { type: string, format: date }
+                department_id: { type: integer }
+      responses:
+        "200":
+          description: Payslip generation job queued
+
+components:
+  schemas:
+    Employee:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        job_title: { type: string }
+        department_id: { type: integer }
+        department_name: { type: string }
+        work_email: { type: string, format: email }
+        active: { type: boolean }
+
+    EmployeeCreate:
+      type: object
+      required: [name, department_id]
+      properties:
+        name: { type: string }
+        job_title: { type: string }
+        department_id: { type: integer }
+        work_email: { type: string, format: email }
+
+    LeaveRequest:
+      type: object
+      required: [employee_id, holiday_status_id, date_from, date_to]
+      properties:
+        employee_id: { type: integer }
+        holiday_status_id: { type: integer }
+        date_from: { type: string, format: date }
+        date_to: { type: string, format: date }
+        name: { type: string, description: Reason }
