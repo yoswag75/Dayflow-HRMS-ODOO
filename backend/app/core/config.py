@@ -8,4 +8,8 @@ class Settings:
     SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "noreply@dayflow.hr")
     ENVIRONMENT = os.getenv("ENVIRONMENT", "test")
 
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-change-in-prod")
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+
 settings = Settings()
