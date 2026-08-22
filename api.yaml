@@ -1,1 +1,274 @@
+openapi: 3.0.3
+info:
+  title: Dayflow HRMS API
+  version: 1.0.0
+  description: API endpoints defined in Docs/Tech_details.md.
 
+paths:
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Create a new employee account and generate credentials
+      x-access: Admin/HR
+      responses:
+        "201":
+          description: Employee account created
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and issue a JWT
+      x-access: Public
+      responses:
+        "200":
+          description: Authentication successful
+        "401":
+          description: Invalid credentials
+
+  /employees:
+    get:
+      tags: [Employee]
+      summary: List employee cards
+      description: Results are scoped to the current user for the Employee role.
+      x-access: All (scoped)
+      responses:
+        "200":
+          description: Employee cards returned
+
+  /employees/{id}/self-serve:
+    patch:
+      tags: [Employee]
+      summary: Instantly update low-risk employee fields
+      x-access: Self
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Employee profile updated
+
+  /employees/{id}/request-edit:
+    patch:
+      tags: [Employee]
+      summary: Request a verified-field edit
+      x-access: Self
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Change request created
+
+  /employees/change-requests:
+    get:
+      tags: [Employee]
+      summary: List pending employee edit requests with diffs
+      x-access: Admin/HR
+      responses:
+        "200":
+          description: Pending change requests returned
+
+  /employees/change-requests/{id}/approve:
+    post:
+      tags: [Employee]
+      summary: Approve and apply an employee edit request
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Change request approved and applied
+
+  /attendance/check-in:
+    post:
+      tags: [Attendance]
+      summary: Mark employee check-in
+      x-access: Self
+      responses:
+        "201":
+          description: Check-in recorded
+
+  /attendance/check-out:
+    post:
+      tags: [Attendance]
+      summary: Mark check-out and calculate work and extra hours
+      x-access: Self
+      responses:
+        "200":
+          description: Check-out recorded
+
+  /attendance/me:
+    get:
+      tags: [Attendance]
+      summary: Get the current employee's daily or weekly attendance
+      x-access: Self
+      responses:
+        "200":
+          description: Attendance view returned
+
+  /attendance:
+    get:
+      tags: [Attendance]
+      summary: Get filterable attendance for all employees
+      x-access: Admin/HR
+      responses:
+        "200":
+          description: Attendance records returned
+
+  /leave/apply:
+    post:
+      tags: [Leave]
+      summary: Submit a standard leave request
+      x-access: Self
+      responses:
+        "201":
+          description: Pending leave request created
+
+  /leave/apply/emergency:
+    post:
+      tags: [Leave]
+      summary: Submit an emergency leave request
+      x-access: Self
+      responses:
+        "201":
+          description: Provisional emergency leave created
+
+  /leave/{id}/approve:
+    post:
+      tags: [Leave]
+      summary: Approve leave and update the employee balance
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Leave approved and balance updated
+
+  /leave/{id}/flag-provisional:
+    post:
+      tags: [Leave]
+      summary: Flag provisional emergency leave for retroactive review
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Provisional leave flagged
+
+  /payroll/me:
+    get:
+      tags: [Payroll]
+      summary: Get the current employee's salary breakdown
+      x-access: Self
+      responses:
+        "200":
+          description: Salary breakdown returned
+
+  /payroll/{employee_id}:
+    patch:
+      tags: [Payroll]
+      summary: Request payroll field changes with a 30-day effective period
+      x-access: Admin
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "201":
+          description: Payroll change requests created
+
+  /payroll/{employee_id}/correct:
+    post:
+      tags: [Payroll]
+      summary: Apply an immediate payroll correction
+      x-access: Admin
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200":
+          description: Payroll correction applied and flagged
+
+  /payroll/change-requests/{id}/acknowledge:
+    post:
+      tags: [Payroll]
+      summary: Acknowledge receipt of an upcoming payroll change
+      x-access: Self
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Payroll change acknowledged
+
+  /onboarding/me:
+    get:
+      tags: [Onboarding]
+      summary: Get the current new hire's checklist and progress
+      x-access: Self
+      responses:
+        "200":
+          description: Onboarding checklist returned
+
+  /gamification/leaderboard:
+    get:
+      tags: [Gamification]
+      summary: Get the opt-in reliability and recognition leaderboard
+      x-access: All
+      responses:
+        "200":
+          description: Leaderboard returned
+
+  /gamification/vote:
+    post:
+      tags: [Gamification]
+      summary: Cast a weighted monthly or yearly vote
+      x-access: All
+      responses:
+        "201":
+          description: Vote recorded
+
+  /simulate/leave-impact:
+    post:
+      tags: [Simulation]
+      summary: Calculate deterministic leave impact
+      x-access: Admin/HR
+      responses:
+        "200":
+          description: Leave-impact simulation returned
+
+  /simulate/resignation-impact:
+    post:
+      tags: [Simulation]
+      summary: Calculate deterministic resignation impact
+      x-access: Admin/HR
+      responses:
+        "200":
+          description: Resignation-impact simulation returned
+
+  /chatbot/ask:
+    post:
+      tags: [Chatbot]
+      summary: Parse a free-text HR question and return a simulation response
+      x-access: Admin/HR
+      responses:
+        "200":
+          description: Natural-language reply and structured simulation data returned
+
+  /notifications:
+    get:
+      tags: [Notification]
+      summary: Get the current user's in-app notifications
+      x-access: Self
+      responses:
+        "200":
+          description: Notification list returned
+
+components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+    EmployeeId:
+      in: path
+      name: employee_id
+      required: true
+      schema:
+        type: integer
