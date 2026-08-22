@@ -131,18 +131,6 @@ backend/
 
 ---
 
-## Module Dependency Map
-
-```
-core/ (DevOps)
-  └── Dev A modules (employee, attendance, leave, payroll, onboarding, shared/change_request)
-        └── Dev B modules (notification → gamification → simulation → chatbot)
-```
-
-**Key rule:** Dev B modules consume Dev A modules via **Pydantic schemas and service functions only** — never import SQLAlchemy models directly.
-
----
-
 ## API Endpoints (Dev B Modules)
 
 ### Notification (`/notifications`)
