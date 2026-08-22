@@ -203,14 +203,6 @@ pytest tests/test_notification.py
 
 ---
 
-## Development Workflow
-
-1. **Stubs first** — Dev B modules use `tests/stubs/schemas.py` to develop against Dev A's schemas before they're implemented. When real schemas land, only the import line changes.
-2. **Pure logic is separated** — `rules.py` (gamification) and `engine.py` (simulation) contain zero DB access. All business rules are unit-testable with no fixtures.
-3. **Security pattern** — Every router uses `Depends(get_current_user)` from `app.core.security`. No custom auth.
-
----
-
 ## License
 
 This project is part of the Dayflow HRMS system.
