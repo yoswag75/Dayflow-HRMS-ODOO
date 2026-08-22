@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from sqlalchemy.orm import Session
 from app.modules.leave.models import LeaveBalance, LeaveRequest
 from app.modules.leave.schemas import LeaveRequestCreate, LeaveRequestOut, LeaveBalanceOut
@@ -56,8 +55,3 @@ def reject_leave(db: Session, leave_id: int, approver_id: int) -> LeaveRequestOu
 def get_leave_balance(db: Session, employee_id: int) -> list[LeaveBalanceOut]:
     rows = db.query(LeaveBalance).filter(LeaveBalance.employee_id == employee_id).all()
     return [LeaveBalanceOut.model_validate(r) for r in rows]
-=======
-def get_employee_by_id(db, id): pass
-def get_leave_balance(db, id): pass
-def get_latest_payslip(db, id): pass
->>>>>>> d80e6553fe1ed5dffcdd64aed8f583c84f9cd895

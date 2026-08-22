@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import secrets
 from sqlalchemy.orm import Session
 from app.modules.employee.models import Employee
@@ -36,8 +35,3 @@ def onboard_employee(db: Session, data: EmployeeCreate) -> tuple[EmployeeOut, st
     seed_balances(db, employee_id=emp.id)
     db.commit()
     return emp, temp_password
-=======
-def get_employee_by_id(db, id): pass
-def get_leave_balance(db, id): pass
-def get_latest_payslip(db, id): pass
->>>>>>> d80e6553fe1ed5dffcdd64aed8f583c84f9cd895

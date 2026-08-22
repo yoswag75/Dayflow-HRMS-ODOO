@@ -22,7 +22,7 @@ def db_session():
     session = SessionLocal()
     
     # Setup baseline data
-    user = User(id=1, email="test@dayflow.hr")
+    user = User(id=1, email="test@dayflow.hr", hashed_password="stub")
     session.add(user)
     session.commit()
     
