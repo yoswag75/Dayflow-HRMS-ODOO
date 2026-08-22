@@ -4,6 +4,7 @@ from app.core.database import Base, get_db
 from app.modules.notification.router import router as notification_router
 from app.modules.gamification.router import router as gamification_router
 from app.modules.simulation.router import router as simulation_router
+from app.modules.chatbot.router import router as chatbot_router
 import sqlite3
 from sqlalchemy import create_engine
 
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(notification_router)
 app.include_router(gamification_router)
 app.include_router(simulation_router)
+app.include_router(chatbot_router)
 
 @app.get("/")
 def root():
