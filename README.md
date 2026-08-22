@@ -111,25 +111,6 @@ backend/
 └── .env
 ```
 
-### Module Responsibilities
-
-| Module | Owner | Description |
-|---|---|---|
-| `auth` | Dev A / DevOps | JWT sign-up/sign-in, role-based access control |
-| `employee` | Dev A | Profile CRUD, self-serve vs verified-edit field tiers |
-| `attendance` | Dev A | Check-in/out tracking, daily/weekly views, streak calculation |
-| `leave` | Dev A | PTO/Sick/Unpaid/Emergency leave, SLA escalation |
-| `payroll` | Dev A | Salary components, 30-day advance-notice change workflow |
-| `onboarding` | Dev A | Role-based checklists, buddy/mentor assignment |
-| `gamification` | Dev B | Points economy, badges, opt-in leaderboard |
-| `simulation` | Dev B | Deterministic what-if engine (salary, headcount, leave policy) |
-| `chatbot` | Dev B | Ollama streaming client, context builder across all modules |
-| `notification` | Dev B | In-app + email notifications, shared contract for all modules |
-| `shared/change_request` | Dev A | Approval/diff pattern reused by payroll + employee edits |
-| `core/*` | DevOps | Config, database, security, scheduler |
-
----
-
 ## User Roles
 
 | Role | Capabilities |
