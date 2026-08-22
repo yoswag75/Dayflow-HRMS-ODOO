@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: Dayflow HRMS API (Intelligence & Engagement)
+  version: 1.0.0
+  description: API documentation for the Dayflow HRMS Dev B modules (Notification, Gamification, Simulation, Chatbot).
+paths:
+  /notifications/me:
+    get:
+      tags:
+        - Notifications
+      summary: List current user's notifications
+      parameters:
+        - name: unread_only
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: A list of notifications
+  /notifications/{id}/read:
+    post:
+      tags:
+        - Notifications
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification marked as read
+  /notifications/preferences:
+    get:
+      tags:
+        - Notifications
+      summary: Get notification preferences
+      responses:
+        '200':
+          description: User's notification preferences
+    put:
+      tags:
+        - Notifications
+      summary: Update notification preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel:
+                  type: string
+                  enum: [IN_APP, EMAIL]
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated preference
+  /gamification/leaderboard:
+    get:
+      tags:
+        - Gamification
+      summary: Points leaderboard (filterable by department/period)
+      parameters:
+        - name: department
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Leaderboard data
+  /gamification/me/points:
+    get:
+      tags:
+        - Gamification
+      summary: Current user's points history
+      responses:
+        '200':
+          description: Points history
+  /gamification/me/badges:
+    get:
+      tags:
+        - Gamification
+      summary: Current user's earned badges
+      responses:
+        '200':
+          description: Earned badges
+  /simulation/run:
+    post:
+      tags:
+        - Simulation
+      summary: Run a what-if scenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenario:
+                  type: string
+                  description: The natural language or structured scenario to simulate
+                parameters:
+                  type: object
+      responses:
+        '200':
+          description: Simulation results and computed answers
+  /simulation/history/{user_id}:
+    get:
+      tags:
+        - Simulation
+      summary: Simulation run history
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: History of past simulation runs
+  /chatbot/session:
+    post:
+      tags:
+        - Chatbot
+      summary: Create a new chat session
+      responses:
+        '200':
+          description: Returns the created session ID
+  /chatbot/message:
+    post:
+      tags:
+        - Chatbot
+      summary: Send a message (streaming response)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Streaming response text (Server-Sent Events)
+  /chatbot/session/{id}/history:
+    get:
+      tags:
+        - Chatbot
+      summary: Get chat session history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of past chat messages
