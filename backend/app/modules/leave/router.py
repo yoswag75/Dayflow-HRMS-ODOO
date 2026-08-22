@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user, require_admin
 from app.modules.leave.schemas import LeaveRequestCreate, LeaveRequestOut, LeaveBalanceOut
-from app.modules.leave.service import apply_leave, approve_leave, reject_leave, get_leave_balance
+from app.modules.leave.service import apply_leave, approve_leave, reject_leave, get_leave_balance, list_leave_requests
 
 router = APIRouter(prefix="/leave", tags=["Leave"])
 
@@ -12,6 +12,18 @@ router = APIRouter(prefix="/leave", tags=["Leave"])
 def apply(body: LeaveRequestCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     body.employee_id = user.employee_id or body.employee_id
     return apply_leave(db, body)
+
+
+@router.get("/me", response_model=list[LeaveRequestOut])
+def my_requests(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if not user.employee_id:
+        raise HTTPException(status_code=400, detail="User has no linked employee record")
+    return list_leave_requests(db, user.employee_id)
+
+
+@router.get("", response_model=list[LeaveRequestOut])
+def all_requests(db: Session = Depends(get_db), _=Depends(require_admin)):
+    return list_leave_requests(db)
 
 
 @router.post("/{leave_id}/approve", response_model=LeaveRequestOut)

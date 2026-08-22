@@ -7,6 +7,7 @@ const SESSION_KEY = 'dayflow:session'
 interface AuthContextValue {
   session: Session | null
   login: (loginId: string, password: string) => Promise<Session>
+  setup: (email: string, password: string) => Promise<Session>
   changePassword: (password: string) => Promise<void>
   logout: () => void
 }
@@ -30,6 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     login: async (loginId, password) => {
       const next = await authService.login(loginId, password)
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(next))
+      setSession(next)
+      return next
+    },
+    setup: async (email, password) => {
+      const next = await authService.setup(email, password)
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(next))
       setSession(next)
       return next

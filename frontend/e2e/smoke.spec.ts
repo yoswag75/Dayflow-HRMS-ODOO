@@ -20,8 +20,8 @@ async function installApiStub(page: Page) {
     let status = 200;
 
     if (url.endsWith('/auth/login')) {
-      const credentials = route.request().postDataJSON() as { login_id: string };
-      const isEmployee = credentials.login_id === 'TEST-EMPLOYEE';
+      const credentials = route.request().postDataJSON() as { email: string };
+      const isEmployee = credentials.email === 'employee@example.test';
       const employee = employees[isEmployee ? 1 : 0];
       body = {
         access_token: 'test-access-token', user_id: employee.user_id, employee_id: employee.id,
@@ -44,7 +44,7 @@ async function installApiStub(page: Page) {
 test('HR can sign in and open the employee directory', async ({ page }) => {
   await installApiStub(page);
   await page.goto('/login');
-  await page.getByLabel(/login id/i).fill('TEST-HR');
+  await page.getByLabel(/work email/i).fill('hr@example.test');
   await page.getByLabel(/^password$/i).fill('TestPassword123!');
   await page.getByRole('button', { name: /sign in/i }).click();
 
@@ -55,7 +55,7 @@ test('HR can sign in and open the employee directory', async ({ page }) => {
 test('employee navigation is role-specific', async ({ page }) => {
   await installApiStub(page);
   await page.goto('/login');
-  await page.getByLabel(/login id/i).fill('TEST-EMPLOYEE');
+  await page.getByLabel(/work email/i).fill('employee@example.test');
   await page.getByLabel(/^password$/i).fill('TestPassword123!');
   await page.getByRole('button', { name: /sign in/i }).click();
 

@@ -68,17 +68,17 @@ beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     if (url.endsWith('/auth/login')) {
-      const credentials = JSON.parse(String(init?.body)) as { login_id: string };
-      const isEmployee = credentials.login_id !== 'TEST-HR';
+      const credentials = JSON.parse(String(init?.body)) as { email: string };
+      const isEmployee = credentials.email !== 'hr@example.test';
       const employee = employees[isEmployee ? 1 : 0];
       return json({
         access_token: 'test-access-token',
         user_id: employee.user_id,
         employee_id: employee.id,
         name: employee.name,
-        login_id: credentials.login_id,
+        login_id: credentials.email,
         role: isEmployee ? 'employee' : 'hr',
-        must_change_password: credentials.login_id === 'TEST-FIRST-LOGIN',
+        must_change_password: credentials.email === 'first@example.test',
       });
     }
     if (url.endsWith('/employees/2')) return json(employees[1]);
@@ -87,9 +87,9 @@ beforeEach(() => {
   }));
 });
 
-async function signIn(employeeId: string, password = 'TestPassword123!') {
+async function signIn(email: string, password = 'TestPassword123!') {
   const user = userEvent.setup();
-  await user.type(screen.getByLabelText(/login id/i), employeeId);
+  await user.type(screen.getByLabelText(/work email/i), email);
   await user.type(screen.getByLabelText(/^password$/i), password);
   await user.click(screen.getByRole('button', { name: /sign in/i }));
 }
@@ -108,21 +108,21 @@ describe('Dayflow application', () => {
 
   it('takes an employee to their profile after sign in', async () => {
     renderApp('/login');
-    await signIn('TEST-EMPLOYEE');
+    await signIn('employee@example.test');
     expect(await screen.findByRole('heading', { name: /my profile/i })).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Test Employee' })).toBeInTheDocument();
   });
 
   it('takes HR to the employee directory after sign in', async () => {
     renderApp('/login');
-    await signIn('TEST-HR');
+    await signIn('hr@example.test');
     expect(await screen.findByRole('heading', { name: /employees/i })).toBeInTheDocument();
     expect((await screen.findAllByText('Test Employee')).length).toBeGreaterThan(0);
   });
 
   it('enforces first-login password change', async () => {
     renderApp('/login');
-    await signIn('TEST-FIRST-LOGIN');
+    await signIn('first@example.test');
     expect(await screen.findByRole('heading', { name: /choose a new password/i })).toBeInTheDocument();
   });
 });

@@ -172,10 +172,11 @@ Dayflow is a role-based Human Resource Management System for employees and HR/Ad
 
 ### 5.2 Current backend repository status
 
-- The backend is planned as a FastAPI modular monolith using PostgreSQL, SQLAlchemy/Alembic, JWT authentication, APScheduler, and Ollama.
-- Scaffolds currently exist for core services, Auth, Change Request, Notification, Gamification, Simulation, and Chatbot.
-- Employee, Attendance, Leave, Payroll, and Onboarding implementation folders are not yet present.
-- Existing backend application, router, service, model, and schema files are placeholders; frontend work must use mocks until implemented routes match `api.yaml`.
+- The backend now starts as a FastAPI modular monolith with SQLAlchemy, JWT authentication, and all implemented routers registered.
+- A local SQLite database is the zero-configuration default; PostgreSQL remains available through `DATABASE_URL` and Docker Compose.
+- Live end-to-end flows are connected for first-admin setup, login, forced password change, employee onboarding/directory/profile viewing, personal and HR attendance, leave requests and approvals, employee onboarding tasks, recognition leaderboard, headcount simulation, chatbot, and notifications.
+- Payroll execution and salary-change services exist but do not yet provide the employee-facing read APIs required by the frontend.
+- Profile editing, employee change-request routes, emergency-leave provisional processing, gamification voting, and complete payroll visibility remain unavailable.
 
 ## 6. Suggested Delivery Order
 
@@ -204,3 +205,4 @@ Dayflow is a role-based Human Resource Management System for employees and HR/Ad
 | 2026-08-22 | Initial functional scope created from the requirements brief and UI board. | Team | Confirm final API contract before implementation. |
 | 2026-08-22 | Aligned functional scope with `backend/README.md`, `Docs/Implementation.md`, and `Docs/Tech_details.md`; added change-request, emergency leave, payroll notice, onboarding, gamification, simulation, chatbot, and notification requirements. | Codex | Backend-selected Notification, Simulation, and Chatbot route designs supersede legacy route names. |
 | 2026-08-22 | Recorded current backend scaffold status and mock-first frontend requirement. | Codex | Backend implementation is not yet available for live integration. |
+| 2026-08-22 | Repaired the merged backend, registered routers, added first-admin setup and a real HTTP workflow, and connected the frontend to available functionality without runtime mocks. | Codex | Unsupported workflows are hidden or shown as unavailable instead of calling nonexistent endpoints. |

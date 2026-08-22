@@ -8,13 +8,13 @@ from app.modules.employee.service import get_employee_by_id, list_employees, onb
 router = APIRouter(prefix="/employees", tags=["Employee"])
 
 
-@router.post("/", response_model=EmployeeOnboardOut, status_code=201)
+@router.post("", response_model=EmployeeOnboardOut, status_code=201)
 def create(body: EmployeeCreate, db: Session = Depends(get_db), _=Depends(require_admin)):
     emp, temp_password = onboard_employee(db, body)
     return EmployeeOnboardOut(employee=emp, temp_password=temp_password)
 
 
-@router.get("/", response_model=list[EmployeeOut])
+@router.get("", response_model=list[EmployeeOut])
 def list_all(department: str | None = None, db: Session = Depends(get_db), _=Depends(get_current_user)):
     return list_employees(db, department=department)
 

@@ -8,7 +8,7 @@ import { roleLanding, useAuth } from '../auth'
 import { InlineLoader } from '../components/Status'
 import { ApiError } from '../types'
 
-const loginSchema = z.object({ loginId: z.string().trim().min(1, 'Enter your login ID.'), password: z.string().min(1, 'Enter your password.') })
+const loginSchema = z.object({ email: z.string().trim().email('Enter a valid email address.'), password: z.string().min(1, 'Enter your password.') })
 type LoginValues = z.infer<typeof loginSchema>
 
 export function LoginPage() {
@@ -17,14 +17,14 @@ export function LoginPage() {
   const location = useLocation()
   const [visible, setVisible] = useState(false)
   const [serverError, setServerError] = useState('')
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { loginId: '', password: '' } })
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } })
 
   if (session) return <Navigate to={session.mustChangePassword ? '/change-password' : roleLanding(session)} replace />
 
   const submit = handleSubmit(async (values) => {
     setServerError('')
     try {
-      const next = await login(values.loginId, values.password)
+      const next = await login(values.email, values.password)
       const returnTo = new URLSearchParams(location.search).get('returnTo')
       navigate(next.mustChangePassword ? '/change-password' : returnTo || roleLanding(next), { replace: true })
     } catch (error) {
@@ -35,14 +35,39 @@ export function LoginPage() {
   return (
     <div className="auth-page">
       <form className="auth-panel" onSubmit={submit} noValidate>
-        <div className="auth-heading"><LockKeyhole size={20} aria-hidden="true" /><div><h1>Sign in</h1><p>Use your issued login ID to continue.</p></div></div>
+        <div className="auth-heading"><LockKeyhole size={20} aria-hidden="true" /><div><h1>Sign in</h1><p>Use your work email to continue.</p></div></div>
         {serverError && <div className="form-alert" role="alert">{serverError}</div>}
-        <label className="field"><span>Login ID</span><input autoComplete="username" autoFocus {...register('loginId')} aria-invalid={!!errors.loginId} />{errors.loginId && <small role="alert">{errors.loginId.message}</small>}</label>
+        <label className="field"><span>Work email</span><input type="email" autoComplete="username" autoFocus {...register('email')} aria-invalid={!!errors.email} />{errors.email && <small role="alert">{errors.email.message}</small>}</label>
         <label className="field"><span>Password</span><div className="password-field"><input type={visible ? 'text' : 'password'} autoComplete="current-password" {...register('password')} aria-invalid={!!errors.password} /><button type="button" aria-label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible((value) => !value)}>{visible ? <EyeOff /> : <Eye />}</button></div>{errors.password && <small role="alert">{errors.password.message}</small>}</label>
         <button className="button button-primary button-block" disabled={isSubmitting}>{isSubmitting ? <InlineLoader label="Signing in" /> : 'Sign in'}</button>
+        <p className="auth-footnote">Starting a new workspace? <Link to="/setup">Create the first administrator</Link></p>
       </form>
     </div>
   )
+}
+
+const setupSchema = z.object({
+  email: z.string().trim().email('Enter a valid email address.'),
+  password: z.string().min(10, 'Use at least 10 characters.'),
+  confirm: z.string(),
+}).refine((value) => value.password === value.confirm, { path: ['confirm'], message: 'Passwords do not match.' })
+
+export function SetupPage() {
+  const { session, setup } = useAuth()
+  const navigate = useNavigate()
+  const [serverError, setServerError] = useState('')
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof setupSchema>>({ resolver: zodResolver(setupSchema) })
+  if (session) return <Navigate to={roleLanding(session)} replace />
+  const submit = handleSubmit(async ({ email, password }) => {
+    setServerError('')
+    try {
+      const next = await setup(email, password)
+      navigate(roleLanding(next), { replace: true })
+    } catch (error) {
+      setServerError(error instanceof ApiError ? error.message : 'Unable to set up this workspace.')
+    }
+  })
+  return <div className="auth-page"><form className="auth-panel" onSubmit={submit}><div className="auth-heading"><LockKeyhole size={20} /><div><h1>Set up Dayflow</h1><p>Create the first administrator. This works only on an empty database.</p></div></div>{serverError && <div className="form-alert" role="alert">{serverError}</div>}<label className="field"><span>Administrator email</span><input type="email" autoComplete="username" {...register('email')} />{errors.email && <small>{errors.email.message}</small>}</label><label className="field"><span>Password</span><input type="password" autoComplete="new-password" {...register('password')} />{errors.password && <small>{errors.password.message}</small>}</label><label className="field"><span>Confirm password</span><input type="password" autoComplete="new-password" {...register('confirm')} />{errors.confirm && <small>{errors.confirm.message}</small>}</label><button className="button button-primary button-block" disabled={isSubmitting}>{isSubmitting ? <InlineLoader label="Creating workspace" /> : 'Create administrator'}</button><p className="auth-footnote"><Link to="/login">Back to sign in</Link></p></form></div>
 }
 
 const passwordSchema = z.object({ password: z.string().min(10, 'Use at least 10 characters.'), confirm: z.string() }).refine((value) => value.password === value.confirm, { path: ['confirm'], message: 'Passwords do not match.' })

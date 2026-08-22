@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.core.database import Base
 from app.modules.auth.models import User
+from app.core.security import hash_password
 # Import all models to ensure they are registered with Base.metadata
 from app.modules.gamification.models import PointsLedger, Badge, EmployeeBadge
 from app.modules.notification.models import NotificationPreference, NotificationChannel, Notification
@@ -22,7 +23,7 @@ def db_session():
     session = SessionLocal()
     
     # Setup baseline data
-    user = User(id=1, email="test@dayflow.hr", hashed_password="stub")
+    user = User(id=1, email="test@dayflow.hr", hashed_password=hash_password("test-password"))
     session.add(user)
     session.commit()
     

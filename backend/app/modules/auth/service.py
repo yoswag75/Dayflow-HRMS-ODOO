@@ -20,5 +20,11 @@ def create_user(db: Session, email: str, password: str, role: Role = Role.EMPLOY
 
 
 def issue_tokens(user: User) -> TokenPair:
-    token = create_access_token({"sub": str(user.id), "role": user.role})
+    token = create_access_token({
+        "sub": str(user.id),
+        "email": user.email,
+        "role": user.role.value,
+        "employee_id": user.employee_id,
+        "force_password_change": user.force_password_change,
+    })
     return TokenPair(access_token=token)

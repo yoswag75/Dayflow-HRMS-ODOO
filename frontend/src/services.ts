@@ -1,4 +1,4 @@
-import { ApiError, type AttendanceRecord, type ChangeRequest, type Employee, type LeaveRequest, type Session, type UserRole } from './types'
+import { ApiError, type AttendanceRecord, type ChangeRequest, type Employee, type LeaderboardEntry, type LeaveRequest, type NotificationItem, type OnboardResult, type OnboardingTask, type Session, type UserRole } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || 'http://localhost:8000'
 const SESSION_KEY = 'dayflow:session'
@@ -127,7 +127,7 @@ function normalizeSession(value: unknown, loginId: string): Session {
   const userId = numberValue(root.userId, user.id, claims.userId, claims.sub)
   const employeeId = numberValue(root.employeeId, user.employeeId, employee.id, claims.employeeId)
 
-  if (!token || !userId || !employeeId || !['employee', 'hr', 'admin'].includes(role)) {
+  if (!token || !userId || !['employee', 'hr', 'admin'].includes(role) || (role === 'employee' && !employeeId)) {
     throw new ApiError(502, 'The login response is missing the token, role, or employee identity required by the frontend.')
   }
 
@@ -138,7 +138,7 @@ function normalizeSession(value: unknown, loginId: string): Session {
     name: textValue(root.name, user.name, employee.name, claims.name, loginId),
     loginId: textValue(root.loginId, user.loginId, claims.loginId, loginId),
     role,
-    mustChangePassword: Boolean(root.mustChangePassword ?? user.mustChangePassword ?? claims.mustChangePassword),
+    mustChangePassword: Boolean(root.mustChangePassword ?? root.forcePasswordChange ?? user.mustChangePassword ?? user.forcePasswordChange ?? claims.mustChangePassword ?? claims.forcePasswordChange),
   }
 }
 
@@ -148,15 +148,15 @@ function normalizeEmployee(value: unknown): Employee {
   return {
     id: numberValue(item.id),
     userId: numberValue(item.userId, user.id),
-    name: textValue(item.name, user.name),
-    loginId: textValue(item.loginId, user.loginId),
+    name: textValue(item.name, user.name) || [textValue(item.firstName), textValue(item.lastName)].filter(Boolean).join(' '),
+    loginId: textValue(item.loginId, user.loginId, item.email),
     email: textValue(item.email, item.workEmail, item.personalEmail, user.email),
     phone: textValue(item.phone),
     department: textValue(item.department),
     designation: textValue(item.designation),
     manager: textValue(item.manager, item.managerName),
     location: textValue(item.location, item.address),
-    status: textValue(item.status, 'absent').toLowerCase() as Employee['status'],
+    status: textValue(item.status, 'active').toLowerCase() as Employee['status'],
     about: textValue(item.about),
     skills: Array.isArray(item.skills) ? item.skills.map(String) : [],
     joinedOn: textValue(item.joinedOn, item.doj, item.dateOfJoining),
@@ -169,12 +169,12 @@ function normalizeAttendance(value: unknown): AttendanceRecord {
   return {
     id: numberValue(item.id),
     employeeId: numberValue(item.employeeId, employee.id),
-    employeeName: textValue(item.employeeName, employee.name),
+    employeeName: textValue(item.employeeName, employee.name) || `Employee #${numberValue(item.employeeId, employee.id)}`,
     date: textValue(item.date),
     checkIn: textValue(item.checkIn, item.checkInTime) || null,
     checkOut: textValue(item.checkOut, item.checkOutTime) || null,
-    workHours: numberValue(item.workHours),
-    status: textValue(item.status).toLowerCase() as AttendanceRecord['status'],
+    workHours: numberValue(item.workHours) || hoursBetween(textValue(item.checkIn), textValue(item.checkOut)),
+    status: textValue(item.status).toLowerCase().replace('on_leave', 'leave') as AttendanceRecord['status'],
   }
 }
 
@@ -184,13 +184,19 @@ function normalizeLeave(value: unknown): LeaveRequest {
   return {
     id: numberValue(item.id),
     employeeId: numberValue(item.employeeId, employee.id),
-    employeeName: textValue(item.employeeName, employee.name),
+    employeeName: textValue(item.employeeName, employee.name) || `Employee #${numberValue(item.employeeId, employee.id)}`,
     type: textValue(item.type, item.leaveType).toLowerCase() as LeaveRequest['type'],
     startDate: textValue(item.startDate),
     endDate: textValue(item.endDate),
-    remarks: textValue(item.remarks),
+    remarks: textValue(item.remarks, item.reason),
     status: textValue(item.status).toLowerCase() as LeaveRequest['status'],
   }
+}
+
+function hoursBetween(start: string, end: string) {
+  if (!start || !end) return 0
+  const milliseconds = new Date(end).getTime() - new Date(start).getTime()
+  return milliseconds > 0 ? Math.round(milliseconds / 36000) / 100 : 0
 }
 
 function normalizeChange(value: unknown): ChangeRequest {
@@ -209,9 +215,11 @@ function normalizeChange(value: unknown): ChangeRequest {
 }
 
 export const authService = {
-  login: async (loginId: string, password: string) => {
-    const payload = await request<unknown>('/auth/login', jsonRequest('POST', { loginId, password }))
-    return normalizeSession(payload, loginId)
+  setupStatus: async () => Boolean(firstRecord(await request('/auth/setup-status'), ['data']).required),
+  setup: async (email: string, password: string) => normalizeSession(await request('/auth/setup', jsonRequest('POST', { email, password })), email),
+  login: async (email: string, password: string) => {
+    const payload = await request<unknown>('/auth/login', jsonRequest('POST', { email, password }))
+    return normalizeSession(payload, email)
   },
   changePassword: async (session: Session, password: string) => {
     const payload = await request<unknown>('/auth/change-password', jsonRequest('POST', { password }))
@@ -224,10 +232,22 @@ export const authService = {
 export const employeeService = {
   list: async () => listFrom<unknown>(await request('/employees'), ['employees', 'items', 'data']).map(normalizeEmployee),
   get: async (id: number) => normalizeEmployee(await request(`/employees/${id}`)),
-  create: async (input: Omit<Employee, 'id' | 'userId' | 'status' | 'about' | 'skills'>) => normalizeEmployee(await request('/auth/signup', jsonRequest('POST', input))),
-  update: async (id: number, updates: Partial<Employee>) => normalizeEmployee(await request(`/employees/${id}/self-serve`, jsonRequest('PATCH', updates))),
-  changes: async () => listFrom<unknown>(await request('/employees/change-requests'), ['changeRequests', 'items', 'data']).map(normalizeChange),
-  resolveChange: async (id: number, status: 'approved' | 'rejected') => normalizeChange(await request(`/employees/change-requests/${id}/${status === 'approved' ? 'approve' : 'reject'}`, jsonRequest('POST'))),
+  create: async (input: Omit<Employee, 'id' | 'userId' | 'status' | 'about' | 'skills'>): Promise<OnboardResult> => {
+    const [firstName, ...lastNameParts] = input.name.trim().split(/\s+/)
+    const payload = await request<unknown>('/employees', jsonRequest('POST', {
+      firstName,
+      lastName: lastNameParts.join(' ') || '-',
+      email: input.email,
+      department: input.department || undefined,
+      designation: input.designation || undefined,
+      dateOfJoining: input.joinedOn || undefined,
+    }))
+    const root = firstRecord(payload, ['data'])
+    return { employee: normalizeEmployee(root.employee), temporaryPassword: textValue(root.tempPassword) }
+  },
+  update: async (_id: number, _updates: Partial<Employee>) => { throw new ApiError(501, 'Profile editing is not available in the current backend.') },
+  changes: async () => { throw new ApiError(501, 'Employee change requests are not available in the current backend.') },
+  resolveChange: async (_id: number, _status: 'approved' | 'rejected') => { throw new ApiError(501, 'Employee change requests are not available in the current backend.') },
 }
 
 export const attendanceService = {
@@ -238,6 +258,43 @@ export const attendanceService = {
 
 export const leaveService = {
   list: async (employeeId?: number) => listFrom<unknown>(await request(employeeId ? '/leave/me' : '/leave'), ['leaveRequests', 'requests', 'items', 'data']).map(normalizeLeave),
-  apply: async (input: Omit<LeaveRequest, 'id' | 'status'>) => normalizeLeave(await request(input.type === 'emergency' ? '/leave/apply/emergency' : '/leave/apply', jsonRequest('POST', input))),
+  apply: async (input: Omit<LeaveRequest, 'id' | 'status'>) => normalizeLeave(await request('/leave/apply', jsonRequest('POST', {
+    employeeId: input.employeeId,
+    leaveType: input.type.toUpperCase(),
+    startDate: input.startDate,
+    endDate: input.endDate,
+    reason: input.remarks,
+  }))),
   resolve: async (id: number, status: 'approved' | 'rejected') => normalizeLeave(await request(`/leave/${id}/${status === 'approved' ? 'approve' : 'reject'}`, jsonRequest('POST'))),
+}
+
+export const onboardingService = {
+  mine: async () => listFrom<unknown>(await request('/onboarding/me'), ['items', 'data']).map((item) => {
+    const record = firstRecord(item, ['data'])
+    return { id: numberValue(record.id), employeeId: numberValue(record.employeeId), taskName: textValue(record.taskName), status: textValue(record.status).toLowerCase() as OnboardingTask['status'], dueDate: textValue(record.dueDate) }
+  }),
+  complete: async (id: number) => request(`/onboarding/tasks/${id}`, jsonRequest('PATCH')),
+}
+
+export const recognitionService = {
+  leaderboard: async () => listFrom<LeaderboardEntry>(await request('/gamification/leaderboard'), ['items', 'data']),
+  points: async () => listFrom<JsonRecord>(await request('/gamification/me/points'), ['items', 'data']),
+  badges: async () => listFrom<JsonRecord>(await request('/gamification/me/badges'), ['items', 'data']),
+}
+
+export const notificationService = {
+  list: async () => listFrom<NotificationItem>(await request('/notifications/me'), ['items', 'data']),
+  markRead: async (id: number) => request(`/notifications/${id}/read`, jsonRequest('POST')),
+}
+
+export const simulationService = {
+  runHeadcount: async (department: string, delta: number, averageSalary: number) => request<{ summary: string; impact: Record<string, unknown>; warnings: string[] }>('/simulation/run', jsonRequest('POST', {
+    scenarioType: 'HEADCOUNT_CHANGE',
+    params: { department, delta, avgSalaryForNewHires: averageSalary },
+  })),
+}
+
+export const chatbotService = {
+  createSession: async () => firstRecord(await request('/chatbot/session', jsonRequest('POST')), ['data']),
+  sendMessage: async (sessionId: number, message: string) => request<string>('/chatbot/message', jsonRequest('POST', { sessionId, message })),
 }

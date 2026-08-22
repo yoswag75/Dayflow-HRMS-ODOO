@@ -3,25 +3,28 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Bot, CalendarDays, ChevronDown, CircleUserRound, ClipboardCheck, Coins, LogOut, Menu, MessageSquareText, Settings2, Sparkles, UserRound, Users, X } from 'lucide-react'
 import { useAuth } from '../auth'
 
-const employeeItems = [
+type NavigationItem = { to: string; label: string; icon: typeof UserRound; planned?: boolean }
+
+const employeeItems: NavigationItem[] = [
   { to: '/profile', label: 'My profile', icon: UserRound },
   { to: '/attendance', label: 'Attendance', icon: CalendarDays },
   { to: '/leave', label: 'Time off', icon: ClipboardCheck },
-  { to: '/onboarding', label: 'Onboarding', icon: Sparkles, planned: true },
-  { to: '/recognition', label: 'Recognition', icon: Coins, planned: true },
-  { to: '/notifications', label: 'Notifications', icon: Bell, planned: true },
+  { to: '/onboarding', label: 'Onboarding', icon: Sparkles },
+  { to: '/recognition', label: 'Recognition', icon: Coins },
+  { to: '/chatbot', label: 'Chatbot', icon: Bot },
+  { to: '/notifications', label: 'Notifications', icon: Bell },
 ]
 
-const adminItems = [
+const adminItems: NavigationItem[] = [
   { to: '/employees', label: 'Employees', icon: Users },
   { to: '/attendance', label: 'Attendance', icon: CalendarDays },
   { to: '/leave', label: 'Time off', icon: ClipboardCheck },
   { to: '/payroll', label: 'Payroll', icon: Coins, planned: true },
-  { to: '/onboarding', label: 'Onboarding', icon: Sparkles, planned: true },
-  { to: '/recognition', label: 'Recognition', icon: Settings2, planned: true },
-  { to: '/simulation', label: 'Simulation', icon: MessageSquareText, planned: true },
-  { to: '/chatbot', label: 'Chatbot', icon: Bot, planned: true },
-  { to: '/notifications', label: 'Notifications', icon: Bell, planned: true },
+  { to: '/onboarding', label: 'Onboarding', icon: Sparkles },
+  { to: '/recognition', label: 'Recognition', icon: Settings2 },
+  { to: '/simulation', label: 'Simulation', icon: MessageSquareText },
+  { to: '/chatbot', label: 'Chatbot', icon: Bot },
+  { to: '/notifications', label: 'Notifications', icon: Bell },
 ]
 
 const routeNames: Record<string, string> = {
@@ -68,7 +71,7 @@ export function Shell() {
             <NavLink className="icon-button" to="/notifications" aria-label="Notifications"><Bell size={17} /></NavLink>
             <div className="account-menu-wrap">
               <button className="account-button" onClick={() => setAccountOpen((value) => !value)} aria-expanded={accountOpen}><span>{session?.name}</span><ChevronDown size={14} /></button>
-              {accountOpen && <div className="account-menu"><button onClick={() => navigate('/profile')}><UserRound size={15} />Profile</button><button onClick={signOut}><LogOut size={15} />Sign out</button></div>}
+              {accountOpen && <div className="account-menu">{session?.role === 'employee' && <button onClick={() => navigate('/profile')}><UserRound size={15} />Profile</button>}<button onClick={signOut}><LogOut size={15} />Sign out</button></div>}
             </div>
           </div>
         </header>

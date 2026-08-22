@@ -49,6 +49,14 @@ def get_attendance_for_period(db: Session, employee_id: int, start: date, end: d
     return [AttendanceRecordOut.model_validate(r) for r in rows]
 
 
+def get_all_attendance_for_period(db: Session, start: date, end: date) -> list[AttendanceRecordOut]:
+    rows = db.query(AttendanceRecord).filter(
+        AttendanceRecord.date >= start,
+        AttendanceRecord.date <= end,
+    ).order_by(AttendanceRecord.date.desc()).all()
+    return [AttendanceRecordOut.model_validate(row) for row in rows]
+
+
 def get_attendance_summary(db: Session, employee_id: int, month: int, year: int) -> dict:
     import calendar
     start = date(year, month, 1)

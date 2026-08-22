@@ -24,10 +24,40 @@ export interface Employee {
   designation: string
   manager: string
   location: string
-  status: AttendanceStatus
+  status: 'active' | 'inactive' | 'on_leave'
   about: string
   skills: string[]
   joinedOn: string
+}
+
+export interface OnboardResult {
+  employee: Employee
+  temporaryPassword: string
+}
+
+export interface OnboardingTask {
+  id: number
+  employeeId: number
+  taskName: string
+  status: 'pending' | 'done'
+  dueDate: string
+}
+
+export interface LeaderboardEntry {
+  rank: number
+  employeeId: number
+  employeeName: string
+  totalPoints: number
+  department: string
+}
+
+export interface NotificationItem {
+  id: number
+  title: string
+  body: string
+  type: string
+  read: boolean
+  createdAt: string
 }
 
 export interface AttendanceRecord {
