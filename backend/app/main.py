@@ -1,33 +1,32 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import Base, get_db
-from app.modules.notification.router import router as notification_router
-from app.modules.gamification.router import router as gamification_router
-from app.modules.simulation.router import router as simulation_router
-from app.modules.chatbot.router import router as chatbot_router
-import sqlite3
-from sqlalchemy import create_engine
+from app.core.config import settings
 
-# Just for local testing until DevOps sets up PostgreSQL
-engine = create_engine("sqlite:///./dayflow.db", connect_args={"check_same_thread": False})
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Dayflow HRMS", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
-# Include the routers we have so far
-app.include_router(notification_router)
-app.include_router(gamification_router)
-app.include_router(simulation_router)
-app.include_router(chatbot_router)
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to Dayflow HRMS API"}
+    return {
+        "message": f"Welcome to {settings.PROJECT_NAME} API",
+        "version": settings.VERSION,
+        "docs": "/docs",
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
