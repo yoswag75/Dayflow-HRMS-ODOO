@@ -6,19 +6,7 @@ from app.modules.notification.schemas import NotificationCreate, NotificationTyp
 from app.modules.notification import service
 from app.modules.auth.models import User
 
-# Create an in-memory SQLite database for tests
-engine = create_engine("sqlite:///:memory:")
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@pytest.fixture(scope="function")
-def db_session():
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=engine)
 
 def test_create_and_list_notification(db_session):
     notif = service.create_notification(db_session, NotificationCreate(

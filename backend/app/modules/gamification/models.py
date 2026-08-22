@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON, UniqueConstraint, func
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON, UniqueConstraint, func, Index
 from app.core.database import Base
 
 class PointsLedger(Base):
@@ -9,6 +9,10 @@ class PointsLedger(Base):
     reason = Column(String(255))           # "ATTENDANCE_STREAK_7", "BADGE_AWARDED"
     source_module = Column(String(50))     # "attendance", "leave", "system"
     created_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_points_ledger_employee_created", "employee_id", "created_at"),
+    )
 
 class Badge(Base):
     __tablename__ = "badges"

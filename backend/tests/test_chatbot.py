@@ -11,17 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from app.modules.auth.models import User
 from app.modules.gamification.models import PointsLedger
 
-@pytest.fixture
-def db_session():
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(bind=engine)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = SessionLocal()
-    user = User(id=1, email="test@dayflow.hr")
-    session.add(user)
-    session.commit()
-    yield session
-    session.close()
+
 
 @pytest.mark.asyncio
 async def test_build_context_with_stubs(db_session):

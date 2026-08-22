@@ -2,41 +2,57 @@ from sqlalchemy.orm import Session
 from app.modules.chatbot.models import ChatSession, ChatMessage
 from app.modules.chatbot.ollama_client import stream_completion
 
-async def build_context(db: Session, employee_id: int) -> dict:
-    """
-    Assembles read-only snapshot from all modules. Always via service functions, never models.
-    Import errors are caught so chatbot works even if a module isn't deployed yet.
-    """
-    context = {}
+import asyncio
 
+async def _get_employee(db: Session, employee_id: int):
     try:
         from app.modules.employee.service import get_employee_by_id
-        emp = get_employee_by_id(db, employee_id)
-        context["employee"] = emp.model_dump() if emp else {}
+        emp = await asyncio.to_thread(get_employee_by_id, db, employee_id)
+        return emp.model_dump() if emp else {"id": employee_id, "name": f"Employee {employee_id}"}
     except ImportError:
-        context["employee"] = {"id": employee_id, "name": f"Employee {employee_id}"}
+        return {"id": employee_id, "name": f"Employee {employee_id}"}
 
+async def _get_leave(db: Session, employee_id: int):
     try:
         from app.modules.leave.service import get_leave_balance
-        balance = get_leave_balance(db, employee_id)
-        context["leave_balance"] = balance.model_dump() if balance else {}
+        balance = await asyncio.to_thread(get_leave_balance, db, employee_id)
+        return balance.model_dump() if balance else {}
     except ImportError:
-        context["leave_balance"] = {}
+        return {}
 
+async def _get_payslip(db: Session, employee_id: int):
     try:
         from app.modules.payroll.service import get_latest_payslip
-        payslip = get_latest_payslip(db, employee_id)
-        context["latest_payslip"] = payslip.model_dump() if payslip else {}
+        payslip = await asyncio.to_thread(get_latest_payslip, db, employee_id)
+        return payslip.model_dump() if payslip else {}
     except ImportError:
-        context["latest_payslip"] = {}
+        return {}
 
+async def _get_points(db: Session, employee_id: int):
     try:
         from app.modules.gamification.service import get_total_points
-        context["total_points"] = get_total_points(db, employee_id)
+        return await asyncio.to_thread(get_total_points, db, employee_id)
     except ImportError:
-        context["total_points"] = 0
+        return 0
 
-    return context
+async def build_context(db: Session, employee_id: int) -> dict:
+    """
+    Assembles read-only snapshot from all modules via service functions.
+    Uses asyncio.gather for parallel execution.
+    """
+    emp_task = asyncio.create_task(_get_employee(db, employee_id))
+    leave_task = asyncio.create_task(_get_leave(db, employee_id))
+    payslip_task = asyncio.create_task(_get_payslip(db, employee_id))
+    points_task = asyncio.create_task(_get_points(db, employee_id))
+    
+    emp, balance, payslip, points = await asyncio.gather(emp_task, leave_task, payslip_task, points_task)
+    
+    return {
+        "employee": emp,
+        "leave_balance": balance,
+        "latest_payslip": payslip,
+        "total_points": points
+    }
 
 def _build_system_prompt(context: dict) -> str:
     emp = context.get("employee", {})

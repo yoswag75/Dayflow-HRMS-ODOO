@@ -11,21 +11,6 @@ from app.modules.gamification.service import award_points, get_total_points, _tr
 from tests.stubs.schemas import AttendanceSummaryOut
 from tests.seeds.gamification import seed_badges
 
-# DB Fixture for Service Tests
-@pytest.fixture
-def db_session():
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(bind=engine)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = SessionLocal()
-    
-    # create a stub user
-    user = User(id=1, email="test@dayflow.hr")
-    session.add(user)
-    session.commit()
-    
-    yield session
-    session.close()
 
 # Pure unit tests — no DB fixture needed
 def test_streak_rules_below_threshold():
