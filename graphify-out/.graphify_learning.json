@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-08-22T06:59:39.409493+00:00",
+  "nodes": {
+    "api_dayflow_hrms_api": {
+      "code_fingerprint": "0c009370a1b7e1a8add3ef7c80ae5563397527201eda058a09795a106674ef68",
+      "label": "Dayflow HRMS OpenAPI Specification",
+      "last": "2026-08-22T06:56:24.899132+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-22T06:56:24.899132+00:00",
+          "outcome": "useful",
+          "q": "restored openAPI to 3.0.3 so leave that; add missing endpoints, resolve conflicts, update Functionality.md from backend and Docs, and assess frontend readiness"
+        }
+      ],
+      "score": 0.999947986,
+      "source_file": "api.yaml",
+      "status": "tentative",
+      "uses": 1
+    },
+    "backend_readme_project_structure": {
+      "code_fingerprint": "f6f24d4717e3d846c915224df9dab2354a06db4c78d0d8027541b6b00f3af491",
+      "label": "Backend Project Structure",
+      "last": "2026-08-22T06:56:24.899132+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-22T06:56:24.899132+00:00",
+          "outcome": "useful",
+          "q": "restored openAPI to 3.0.3 so leave that; add missing endpoints, resolve conflicts, update Functionality.md from backend and Docs, and assess frontend readiness"
+        }
+      ],
+      "score": 0.999947986,
+      "source_file": "backend/README.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "functionality_api_contract": {
+      "code_fingerprint": "3b4332f3df97de849ea3e1571847790f1ea8b8dc7b5079d9a5bc56b678f81598",
+      "label": "Backend Integration Contract",
+      "last": "2026-08-22T06:56:24.899132+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-22T06:56:24.899132+00:00",
+          "outcome": "useful",
+          "q": "restored openAPI to 3.0.3 so leave that; add missing endpoints, resolve conflicts, update Functionality.md from backend and Docs, and assess frontend readiness"
+        }
+      ],
+      "score": 0.999947986,
+      "source_file": "Functionality.md",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

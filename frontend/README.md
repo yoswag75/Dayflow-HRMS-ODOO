@@ -1,6 +1,6 @@
 # Dayflow frontend
 
-A responsive React prototype for the HR management system. The current build uses an in-memory service layer so the complete interface can be reviewed before connecting it to the backend API.
+A responsive React frontend for the HR management system. All application data is loaded from the backend API; there is no production mock-data fallback.
 
 ## Run locally
 
@@ -11,15 +11,15 @@ npm run dev
 
 Vite serves the application at `http://localhost:5173` by default.
 
-## Demo accounts
+## API configuration
 
-| Role | Employee ID | Password |
-| --- | --- | --- |
-| HR administrator | `HRDEMO001` | `Dayflow123!` |
-| Employee | `EMPDEMO001` | `Dayflow123!` |
-| First-login employee | `NEWEMP001` | `Dayflow123!` |
+Copy the example environment file and point it to the running FastAPI service:
 
-The first-login account demonstrates the mandatory password-change flow.
+```bash
+cp .env.example .env
+```
+
+The default API URL is `http://localhost:8000`. Authentication and all protected requests use the backend-issued bearer token.
 
 ## Checks
 
@@ -35,6 +35,4 @@ Playwright browsers must be installed once before running the end-to-end tests:
 npx playwright install chromium
 ```
 
-## Mock error state
-
-Set `dayflow:force-error` to `true` in browser session storage to force mock API failures and review the shared retry interface.
+The interface displays its shared connection and retry states when the API is unavailable. The backend must supply the authenticated user identity alongside its JWT login response.

@@ -74,9 +74,6 @@ svg { flex: 0 0 auto; }
 .form-alert { background: var(--rose); color: var(--rose-ink); border-left: 3px solid var(--rose-ink); }
 .success-banner { background: var(--mint); color: var(--mint-ink); border-left: 3px solid var(--mint-ink); }
 .warning-banner { background: var(--apricot); color: var(--apricot-ink); border-left: 3px solid var(--apricot-ink); }
-.demo-credentials { margin-top: 20px; padding: 12px; display: grid; gap: 3px; background: var(--seafoam); color: var(--sky-ink); border: 1px solid var(--blue); font-size: .76rem; }
-.demo-credentials strong { margin-bottom: 3px; }
-
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 216px minmax(0, 1fr); }
 .sidebar { min-height: 100vh; padding: 18px 12px 12px; background: var(--seafoam); border-right: 1px solid var(--blue); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 20; }
 .sidebar nav { display: grid; gap: 3px; }

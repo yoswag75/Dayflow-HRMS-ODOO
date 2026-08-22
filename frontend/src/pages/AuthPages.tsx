@@ -40,7 +40,6 @@ export function LoginPage() {
         <label className="field"><span>Login ID</span><input autoComplete="username" autoFocus {...register('loginId')} aria-invalid={!!errors.loginId} />{errors.loginId && <small role="alert">{errors.loginId.message}</small>}</label>
         <label className="field"><span>Password</span><div className="password-field"><input type={visible ? 'text' : 'password'} autoComplete="current-password" {...register('password')} aria-invalid={!!errors.password} /><button type="button" aria-label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible((value) => !value)}>{visible ? <EyeOff /> : <Eye />}</button></div>{errors.password && <small role="alert">{errors.password.message}</small>}</label>
         <button className="button button-primary button-block" disabled={isSubmitting}>{isSubmitting ? <InlineLoader label="Signing in" /> : 'Sign in'}</button>
-        <div className="demo-credentials"><strong>Demo access</strong><span>HR: HRDEMO001</span><span>Employee: EMPDEMO001</span><span>New employee: NEWEMP001</span><span>Password: Dayflow123!</span></div>
       </form>
     </div>
   )
