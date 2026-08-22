@@ -1,12 +1,31 @@
-import os
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-class Settings:
-    SMTP_SERVER = os.getenv("SMTP_SERVER", "localhost")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-    SMTP_USER = os.getenv("SMTP_USER", "user")
-    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "password")
-    SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "noreply@dayflow.hr")
-    ENVIRONMENT = os.getenv("ENVIRONMENT", "test")
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "Dayflow HRMS"
+    VERSION: str = "1.0.0"
+    API_V1_STR: str = "/api/v1"
+
+    # Database
+    DATABASE_URL: str = "sqlite:///./hrms.db"
+
+    # Security / JWT
+    SECRET_KEY: str = "dayflow-hrms-super-secret-jwt-key-for-dev-environment-only-replace-in-prod"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # CORS
+    BACKEND_CORS_ORIGINS: List[str] = ["*"]
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="allow",
+    )
+
 
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-change-in-prod")
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")

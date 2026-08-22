@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+<<<<<<< HEAD
 from app.core.database import Base, engine
 from app.modules.auth.router import router as auth_router
 from app.modules.employee.router import router as employee_router
@@ -32,8 +33,36 @@ app.include_router(payroll_router)
 app.include_router(notification_router)
 app.include_router(gamification_router)
 app.include_router(simulation_router)
+=======
+from app.core.config import settings
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+)
+
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+>>>>>>> d80e6553fe1ed5dffcdd64aed8f583c84f9cd895
 
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to Dayflow HRMS API"}
+    return {
+        "message": f"Welcome to {settings.PROJECT_NAME} API",
+        "version": settings.VERSION,
+        "docs": "/docs",
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}

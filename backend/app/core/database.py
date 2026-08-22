@@ -1,22 +1,23 @@
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from typing import Generator
 from sqlalchemy import create_engine
-import os
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from app.core.config import settings
 
-# Create a generic Base for all modules (Dev A and Dev B) to inherit from.
-Base = declarative_base()
-
-# Simple SQLite setup for local dev until DevOps sets up PostgreSQL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./dayflow.db")
+# For SQLite compatibility with multithreaded requests
+connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
+    settings.DATABASE_URL,
+    connect_args=connect_args,
+    pool_pre_ping=True,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def get_db():
+Base = declarative_base()
+
+
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import calendar
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
@@ -73,3 +74,8 @@ def _apply_salary_change(db: Session, cr) -> None:
 
 
 register_applier("salary_structure", _apply_salary_change)
+=======
+def get_employee_by_id(db, id): pass
+def get_leave_balance(db, id): pass
+def get_latest_payslip(db, id): pass
+>>>>>>> d80e6553fe1ed5dffcdd64aed8f583c84f9cd895

@@ -1,21 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.modules.notification import service, schemas
 from app.modules.notification.models import NotificationPreference
-
-# We mock these if they don't exist yet to avoid ImportErrors during Phase 1 testing
-try:
-    from app.core.security import get_current_user
-    from app.core.database import get_db
-except ImportError:
-    # Stubs for local testing until DevOps provides core/
-    def get_current_user():
-        class DummyUser:
-            id = 1
-            employee_id = 1
-            is_admin = False
-        return DummyUser()
-    def get_db():
-        yield None
+from app.core.security import get_current_user
+from app.core.database import get_db
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
@@ -25,7 +12,10 @@ def my_notifications(unread_only: bool = False, db=Depends(get_db), current_user
 
 @router.post("/{notification_id}/read", response_model=schemas.NotificationOut)
 def mark_read(notification_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
-    return service.mark_read(db, notification_id, current_user.id)
+    try:
+        return service.mark_read(db, notification_id, current_user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
 @router.get("/preferences", response_model=list[schemas.NotificationPreferenceOut])
 def get_preferences(db=Depends(get_db), current_user=Depends(get_current_user)):
