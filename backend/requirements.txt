@@ -1,8 +1,8 @@
-fastapi
+fastapi>=0.111.0
 uvicorn
-sqlalchemy
+sqlalchemy>=2.0
 alembic
-pydantic
+pydantic>=2.0
 pydantic-settings
 python-jose
 passlib[bcrypt]
@@ -10,3 +10,5 @@ httpx
 apscheduler
 pytest
 pytest-asyncio
+pytest-mock
+fakeredis
