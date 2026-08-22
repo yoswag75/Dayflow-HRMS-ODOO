@@ -290,17 +290,6 @@ Sensitive field edits create a Change Request with old value, new value → rout
 
 ---
 
-## Current Status
-
-- ✅ Core requirements and wireframes defined for baseline HRMS
-- ✅ Four operational problems identified and solutions designed
-- ✅ Two novel features designed: Gamification and What-If Simulator + Chatbot
-- ✅ Architecture decided: FastAPI modular monolith, shared Postgres, local Ollama SLM
-- ✅ Full implementation plan drafted, ordered by dependency
-- 🔧 Phase 0 (environment bootstrap, stubs, module scaffolding) — **in progress**
-
----
-
 ## Design References
 
 - [Wireframes & Flow Diagrams (Excalidraw)](https://link.excalidraw.com/l/65VNwvy7c4X/58RLEJ4oOwh)
