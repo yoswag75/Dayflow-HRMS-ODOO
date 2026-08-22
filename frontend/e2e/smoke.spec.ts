@@ -7,7 +7,7 @@ test('HR can sign in and open the employee directory', async ({ page }) => {
   await page.getByRole('button', { name: /sign in/i }).click();
 
   await expect(page.getByRole('heading', { name: 'Employees' })).toBeVisible();
-  await expect(page.getByText('Ava Rao').first()).toBeVisible();
+  await expect(page.getByText('Ava Rao').filter({ visible: true }).first()).toBeVisible();
 });
 
 test('employee navigation is role-specific', async ({ page }) => {
