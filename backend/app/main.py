@@ -13,13 +13,14 @@ from app.modules.simulation import models as simulation_models
 from app.modules.notification.router import router as notification_router
 from app.modules.gamification.router import router as gamification_router
 from app.modules.simulation.router import router as simulation_router
-
+from app.modules.auth.router import router as auth_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
+    app.include_router(auth_router, prefix="/api/v1")
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
