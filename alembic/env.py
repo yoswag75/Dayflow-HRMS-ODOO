@@ -18,7 +18,14 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+from app.core.database import Base
+
+from app.modules.auth.models import User
+from app.modules.gamification.models import PointsLedger, Badge, EmployeeBadge
+from app.modules.notification.models import Notification, NotificationPreference
+from app.modules.simulation.models import SimulationRun
+
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
