@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, get_db
 from app.modules.notification.router import router as notification_router
 from app.modules.gamification.router import router as gamification_router
+from app.modules.simulation.router import router as simulation_router
 import sqlite3
 from sqlalchemy import create_engine
 
@@ -23,6 +24,7 @@ app.add_middleware(
 # Include the routers we have so far
 app.include_router(notification_router)
 app.include_router(gamification_router)
+app.include_router(simulation_router)
 
 @app.get("/")
 def root():
