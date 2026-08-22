@@ -19,8 +19,16 @@ class Settings(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
 
+    # Ollama
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3"
+    OLLAMA_TIMEOUT: int = 30
+
+    # Email
+    EMAIL_PROVIDER: str = "null"
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file="backend/.env",
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="allow",

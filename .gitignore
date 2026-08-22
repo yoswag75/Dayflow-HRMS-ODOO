@@ -1,12 +1,17 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
-# Distribution / packaging
+# Environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Packaging
 .Python
 build/
 develop-eggs/
@@ -14,39 +19,27 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Environments
-.env.local
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Database / Local storage
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
-# IDE / Editor
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Testing / Coverage
+# Testing
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Graphify generated output
+graphify-out/
+backend/.env

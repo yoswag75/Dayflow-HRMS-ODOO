@@ -1,8 +1,21 @@
-openapi: 0.0.1
+openapi: 3.0.3
 info:
   title: Dayflow HRMS API
-  version: 1.0.0
-  description: API endpoints defined in Docs/Tech_details.md.
+  version: 1.1.0
+  description: Canonical frontend/backend API contract aligned with the backend plan and project documentation.
+
+x-contract-changelog:
+  - date: "2026-08-22"
+    version: 1.1.0
+    changes:
+      - Added employee detail and change-request rejection endpoints.
+      - Added leave list, self-list, and rejection endpoints.
+      - Added administrator payroll detail and onboarding progress/task endpoints.
+      - Added gamification points and badges endpoints.
+      - Replaced GET /notifications with GET /notifications/me and added read/preferences endpoints.
+      - Replaced specialized /simulate/* routes with POST /simulation/run and added simulation history.
+      - Replaced POST /chatbot/ask with session, message, and history endpoints.
+      - Backend route choices take precedence where backend/README.md and older planning documents differ.
 
 paths:
   /auth/signup:
@@ -34,6 +47,20 @@ paths:
       responses:
         "200":
           description: Employee cards returned
+
+  /employees/{id}:
+    get:
+      tags: [Employee]
+      summary: Get an employee profile by ID
+      description: Returns a view appropriate to the caller's role and relationship to the employee.
+      x-access: All (scoped)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Employee profile returned
+        "404":
+          description: Employee not found
 
   /employees/{id}/self-serve:
     patch:
@@ -76,6 +103,17 @@ paths:
       responses:
         "200":
           description: Change request approved and applied
+
+  /employees/change-requests/{id}/reject:
+    post:
+      tags: [Employee]
+      summary: Reject an employee edit request with a reason
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Change request rejected
 
   /attendance/check-in:
     post:
@@ -131,6 +169,24 @@ paths:
         "201":
           description: Provisional emergency leave created
 
+  /leave/me:
+    get:
+      tags: [Leave]
+      summary: Get the current employee's leave requests
+      x-access: Self
+      responses:
+        "200":
+          description: Leave requests returned
+
+  /leave:
+    get:
+      tags: [Leave]
+      summary: Get filterable leave requests for all employees
+      x-access: Admin/HR
+      responses:
+        "200":
+          description: Leave requests returned
+
   /leave/{id}/approve:
     post:
       tags: [Leave]
@@ -141,6 +197,17 @@ paths:
       responses:
         "200":
           description: Leave approved and balance updated
+
+  /leave/{id}/reject:
+    post:
+      tags: [Leave]
+      summary: Reject a leave request with a comment
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Leave request rejected
 
   /leave/{id}/flag-provisional:
     post:
@@ -163,6 +230,15 @@ paths:
           description: Salary breakdown returned
 
   /payroll/{employee_id}:
+    get:
+      tags: [Payroll]
+      summary: Get an employee's complete payroll details
+      x-access: Admin
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200":
+          description: Payroll details returned
     patch:
       tags: [Payroll]
       summary: Request payroll field changes with a 30-day effective period
@@ -204,6 +280,28 @@ paths:
         "200":
           description: Onboarding checklist returned
 
+  /onboarding/tasks/{id}:
+    patch:
+      tags: [Onboarding]
+      summary: Update the status of an onboarding task
+      x-access: Self
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Onboarding task updated
+
+  /onboarding/{employee_id}:
+    get:
+      tags: [Onboarding]
+      summary: Get onboarding progress for an employee
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200":
+          description: Employee onboarding progress returned
+
   /gamification/leaderboard:
     get:
       tags: [Gamification]
@@ -212,6 +310,24 @@ paths:
       responses:
         "200":
           description: Leaderboard returned
+
+  /gamification/me/points:
+    get:
+      tags: [Gamification]
+      summary: Get the current employee's points history
+      x-access: Self
+      responses:
+        "200":
+          description: Points history returned
+
+  /gamification/me/badges:
+    get:
+      tags: [Gamification]
+      summary: Get the current employee's earned badges
+      x-access: Self
+      responses:
+        "200":
+          description: Earned badges returned
 
   /gamification/vote:
     post:
@@ -222,34 +338,56 @@ paths:
         "201":
           description: Vote recorded
 
-  /simulate/leave-impact:
+  /simulation/run:
     post:
       tags: [Simulation]
-      summary: Calculate deterministic leave impact
+      summary: Run a deterministic leave-impact or resignation-impact scenario
       x-access: Admin/HR
       responses:
         "200":
-          description: Leave-impact simulation returned
+          description: Simulation result returned
 
-  /simulate/resignation-impact:
-    post:
+  /simulation/history/{user_id}:
+    get:
       tags: [Simulation]
-      summary: Calculate deterministic resignation impact
+      summary: Get simulation history for a user
       x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/UserId"
       responses:
         "200":
-          description: Resignation-impact simulation returned
+          description: Simulation history returned
 
-  /chatbot/ask:
+  /chatbot/session:
     post:
       tags: [Chatbot]
-      summary: Parse a free-text HR question and return a simulation response
+      summary: Create a chat session
+      x-access: Admin/HR
+      responses:
+        "201":
+          description: Chat session created
+
+  /chatbot/message:
+    post:
+      tags: [Chatbot]
+      summary: Send a message and receive a streaming assistant response
       x-access: Admin/HR
       responses:
         "200":
-          description: Natural-language reply and structured simulation data returned
+          description: Streaming chatbot response returned
 
-  /notifications:
+  /chatbot/session/{id}/history:
+    get:
+      tags: [Chatbot]
+      summary: Get message history for a chat session
+      x-access: Admin/HR
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Chat history returned
+
+  /notifications/me:
     get:
       tags: [Notification]
       summary: Get the current user's in-app notifications
@@ -257,6 +395,33 @@ paths:
       responses:
         "200":
           description: Notification list returned
+
+  /notifications/{id}/read:
+    post:
+      tags: [Notification]
+      summary: Mark a notification as read
+      x-access: Self
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Notification marked as read
+
+  /notifications/preferences:
+    get:
+      tags: [Notification]
+      summary: Get the current user's notification preferences
+      x-access: Self
+      responses:
+        "200":
+          description: Notification preferences returned
+    put:
+      tags: [Notification]
+      summary: Update the current user's notification preferences
+      x-access: Self
+      responses:
+        "200":
+          description: Notification preferences updated
 
 components:
   parameters:
@@ -269,6 +434,12 @@ components:
     EmployeeId:
       in: path
       name: employee_id
+      required: true
+      schema:
+        type: integer
+    UserId:
+      in: path
+      name: user_id
       required: true
       schema:
         type: integer
